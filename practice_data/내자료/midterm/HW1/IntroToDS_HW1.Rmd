@@ -1,0 +1,93 @@
+---
+title: "Homework1"
+author: "YoungJin Lee"
+date: "3/28/2018"
+output: 
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+load('bank.RData')
+```
+
+### Question 1. How many clients are included in the data? How many clients are younger than 30 and how many are older than 50?
+```{r}
+dim(bank.df)[1]
+sum(bank.df$age < 30)
+sum(bank.df$age > 50)
+```
+#### ANSWER: 4521 clients are included in the data. 482 clients are younger than 30 and 927 clients are older than 50
+
+### Question 2. “balance” field represents bank account balance in euros. Add new field named “balance_kw” that shows the balance in Korean won. Let us assume the exchange rate of currency is 1200 kw = 1 euro
+
+```{r}
+bank.df$balance_kw <- bank.df$balance * 1200
+head(bank.df)
+colnames(bank.df)
+```
+#### ANSWER: new column; balance_kw added with values(balance x 1200)
+
+### Question 3. How many clients have subscribed a term deposit? In “y” field, what is the proportion of “yes” to all clients in the data?
+```{r}
+sum(bank.df$y == "yes")
+sum(bank.df$y == "yes") / dim(bank.df)[1]
+```
+#### ANSWER: 521 clients have subscribed a term deposit. the proportion of 'yes' to all clients in the data is 0.11524(approximately 11.52%)
+
+### Question 4. In “pdays” field, “-1” value means “the client was not previously contacted”, change the value “-1” to NA value in the field. Find the how many NAs the field has.
+```{r}
+head(bank.df$pdays)
+bank.df$pdays <- replace(bank.df$pdays, bank.df$pdays == -1, NA)
+head(bank.df$pdays)
+sum(is.na(bank.df$pdays))
+```
+#### ANSWER: chaneged the value '-1' to NA in the pday field. There are 3705 NAs in the field.
+
+### Question 5. Count the numbers of clients for each job type.
+```{r}
+summary(bank.df$job)
+```
+#### ANSWER: admin. : 478, blue-collar : 946,  entrepreneur: 168, housemaid: 112, management: 969, retired: 230, self-employed: 183, services: 417, student: 84, technician: 768, unemployed: 128, unknown : 38
+
+### Question 6. Add new field “age_group” that represents categorical age groups “under 20”, “20~29”, “30~39”, “40~49”, “50~59”, “over 60”. Which age group has the largest number of clients?
+```{r}
+bank.df$age_group2 <- cut(bank.df$age, breaks = c(-Inf, 19,29,39,49,59, Inf))
+levels(bank.df$age_group2) <-  c('<20', '20-29', '30-39', '40-49', '50-59', '60+')
+cnt.df <- as.data.frame(table(bank.df$age_group2))
+cnt.df
+largest <- max(cnt.df$Freq)
+cnt.df$Var1[cnt.df$Freq == largest]
+
+```
+#### ANSWER: new field; 'age_group' added. the age group with the largest number of clients is '30-39'; the number is 1808.
+
+### Question 7. From the “age_group” field, calculate campaign success rate for each age group (the portion of “yes” in “y” field). Which age group has the highest success rate?
+```{r}
+prop.df <- prop.table(table(bank.df$y,bank.df$age_group2),2)[2,]
+prop.df
+prop.df <- as.data.frame(prop.df)
+colnames(prop.df) <- "col"
+highest <- max(prop.df)
+rownames(prop.df)[prop.df$col == highest]
+```
+#### ANSWER: '<20': 0.50000000, '20-29': 0.15062762, '30-39': 0.10232301, '40-49': 0.10224439,'50-59': 0.09836066, '60+': 0.31609195. '<20' group has the highest rate at 0.5.
+
+### Question 8. Calculate average contact duration (“duration” field) for each contact type (“contact” field).
+```{r}
+mean(bank.df$duration[bank.df$contact == 'cellular'])
+mean(bank.df$duration[bank.df$contact == 'telephone'])
+mean(bank.df$duration[bank.df$contact == 'unknown'])
+```
+#### ANSWER: 'cellular': 267.1126,'telephone': 243.3555,'unknown': 261.753
+
+### Question 9. Sort the data in ascending order of client age.
+```{r}
+bank.df <- bank.df[order(bank.df$age),]
+head(bank.df)
+```
+#### ANSWER: sorted in acsending order of client age.
+
+### Question 10. Save the data.frame that you have worked through this homework as “.RData” file and submit the file to Edmodo as well as R script file and reporting document.

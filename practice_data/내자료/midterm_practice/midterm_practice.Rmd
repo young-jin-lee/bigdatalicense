@@ -1,0 +1,43 @@
+---
+title: "midterm_practice"
+author: "YJLEE"
+date: "4/16/2018"
+output: word_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+library(doBy)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(stringr)
+library(ggplot2)
+```
+
+## R Basics
+### 1
+```{r}
+```
+### 2
+```{r}
+```
+
+## Project Pipeline
+### 3
+```{r}
+```
+### 4
+```{r}
+```
+
+## R Basics
+### 5
+```{r}
+```
+
+### 6
+```{r}
+```
