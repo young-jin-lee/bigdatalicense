@@ -28,3 +28,4 @@ predictions
 r_sq = xgb_model.score(X_train, y_train)
 print(r_sq)
 print(explained_variance_score(predictions,y_test))
+print("git test")
