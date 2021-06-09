@@ -91,3 +91,9 @@ weather_long_wide_nona = weather_long_wide_nona.drop(['year', 'month','day'], ax
 weather_long_wide_nona = weather_long_wide_nona.rename_axis(None, axis=1)
 weather_long_wide_nona.head()
 
+weather_long_wide_nona = weather_long_wide_nona[~weather_long_wide_nona.isnull().any(axis = 1)]
+
+weather_long_wide_nona['PrecipitationIn'][weather_long_wide_nona['PrecipitationIn'] == 'T'] = 0
+
+weather_long_wide_nona.describe(include='all')
+weather_long_wide_nona.head()
