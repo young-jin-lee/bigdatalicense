@@ -2,18 +2,77 @@
 import pandas as pd
 pd.options.display.max_columns = 999
 pd.options.display.max_rows = 999
+
+
+""" 2018-2 중간고사 """
+
 cars_df = pd.read_csv(r"C:\Users\dof07\PycharmProjects\bigdatalicense\practice_data\내자료\midterm_practice\cars04.csv")
 cars_df.info()
 cars_df.head()
 cars_df.shape
 
-# 3
-cars_df['name'] = cars_df['name'].astype('category')
 
-# 4
+"""
+*. 숫자형, 불리안, 범주형을 나누시오
+"""
+numeric_cols_temp = cars_df._get_numeric_data().columns
+numeric_cols_temp
+bool_cols = cars_df._get_bool_data().columns
+bool_cols
+numeric_cols = list(set(numeric_cols_temp) - set(bool_cols))
+numeric_cols
+non_numeric_cols = list(set(cars_df.columns) - set(numeric_cols))
+non_numeric_cols
+
+"""
+*. Detect outliers for categorical data (boolean)
+"""
+cat_outlier_check = [{col : cars_df[col].unique()} for col in non_numeric_cols if cars_df[col].dtype != 'object']
+cat_outlier_check
+
+# drop rows for integer (ncyl) outliers
+cars_df['ncyl'].value_counts()
+cars_df.drop(cars_df[cars_df['ncyl'] == -1].index, inplace=True)
+
+# Data transformation : change the data type of ncyl from integer to category
+cars_df['ncyl'] = cars_df['ncyl'].astype('category')
+
+"""
+*. Imputation for NAs
+"""
+cars_df['city_mpg'].fillna(cars_df['city_mpg'].mean() , inplace=True)
+cars_df['hwy_mpg'].fillna(cars_df['hwy_mpg'].mean() , inplace=True)
+cars_df['weight'].fillna(cars_df['weight'].mean() , inplace=True)
+cars_df['wheel_base'].fillna(cars_df['wheel_base'].mean() , inplace=True)
+cars_df['length'].fillna(cars_df['length'].mean() , inplace=True)
+cars_df['width'].fillna(cars_df['width'].mean() , inplace=True)
+
+
+"""
+*. logical fields true 값들은 몇개인가
+"""
+[[cars_df[col].value_counts()] for col in bool_cols]
+
+"""
+*. horsepower가 가장 높은 5개의 케이스
+"""
+cars_df.sort_values(by=['horsepwr'], ascending=False).head(5)
+
+"""
+3. name columns은 자동차 모델의 이름을 담고 있습니다. 
+character와 factor type 중 어떤 것이 적절할까요? 필요하다면 type 변환을 하시오.
+"""
+cars_df['name'] = cars_df['name'].astype('category')
+"""
+4. mrsp는 소비자 권장 가격입니다. dealer_cost와 비교해서 평균적으로 차이가 얼마나 나나요?
+"""
 cars_df['msrp'].mean() - cars_df['dealer_cost'].mean()
 
-# 5
+"""
+5. city_mpg값이 가장 큰 자동차 모델은 무엇인가요? 
+그 차의 city_mpg 와 hwy_mpg의 차이는 얼마인가요? 
+이 차는 hwy_mpg가 가장 높은 차와 같은 차종인가요?
+"""
 cars_df['city_mpg'].max()
 top_city_mpg = cars_df.loc[cars_df['city_mpg']==60]
 top_city_mpg['city_mpg']
@@ -26,18 +85,25 @@ top_hwy_mpg['hwy_mpg']
 
 top_city_mpg['city_mpg'] - top_city_mpg['hwy_mpg']
 
-# 6: count certain value(TRUE) in multiple columns
+"""
+6. 각각의 자동차 종류 (sport car, suv, wagon, minivan, pickup)마다자동차 모델이 몇 개씩 있나요? 
+어떤 종류에도 속하지 않는 자동차는 몇 개나 있나요?
+"""
 cars_df.iloc[:,1:6].eq(True).sum()
 
-
-# 7
+"""
+7. SUV와 minivan 차종의 무게를 비교하시오. 평균적으로 어떤 차종이 더 무겁나요?
+"""
 cars_df.loc[cars_df['suv']==True]['weight'].mean() - cars_df.loc[cars_df['minivan']==True]['weight'].mean()
 
-# 8
+"""
+8. 새로운 column “avg_mpg”를 추가하시오. avg_mpg는 city_mpg와 hwy_mpg의 평균입니다.
+"""
 cars_df['avg_mpg'] = (cars_df['city_mpg'] + cars_df['hwy_mpg']) / 2
 
-# 9
-
+"""
+9. “eco_grade”라는 columns을 추가하시오. avg_mpg 상위 20%에는 “good” 하위 20%에는 “bad”, 나머지에는 “normal” 값을 부여하시오.
+"""
 eco_grade, bin_edges_egrade = pd.qcut(x = cars_df['avg_mpg'],
                                        q = [0, 0.2, 0.8, 1],
                                        labels = ['bad', 'normal','good'],
@@ -45,75 +111,119 @@ eco_grade, bin_edges_egrade = pd.qcut(x = cars_df['avg_mpg'],
 cars_df['eco_grade'] = eco_grade
 bin_edges_egrade
 
-# 10
+"""
+*. avg_mpg group by eco_grage
+"""
+cars_df['avg_mpg'].groupby(cars_df['eco_grade']).agg(['count','mean','std','min','max'])
+
+
+"""
+10. 4륜 구동 자동차와 후륜구동 자동차의 마력을 비교하시오
+"""
 cars_df[cars_df['all_wheel'].eq(True)]['horsepwr'].mean() - cars_df[cars_df['rear_wheel'].eq(True)]['horsepwr'].mean()
 cars_df[cars_df['all_wheel'].eq(True)]['horsepwr'].describe()
 
+"""
+11. 브랜드별로 평균 가격은 어떻게 되는지, 내림차순으로 정렬
+"""
+cars_df[['brand', 'model']] = cars_df['name'].str.split(" ", 1, expand = True)
+cars_df['dealer_cost'].groupby(cars_df['brand']).mean().sort_values(ascending=False)
 
+########################################## WEATHER
 
 weather_df = pd.read_csv(r"C:\Users\dof07\PycharmProjects\bigdatalicense\practice_data\내자료\midterm_practice\weather.csv")
 
+
+"""
+1. Data Exploration
+"""
 weather_df.head()
 weather_df.tail()
 weather_df.info()
 weather_df.describe()
 # weather_df = weather.drop(['X'], axis = 1)
 weather_df = weather_df.iloc[:, 1:]
-
 weather_df.isna().sum()
 weather_df.isnull().sum().sum()
 
+
+
+""" 
+2. Tidying dataset
+   - make 'day' column (wide to long)
+   - make measure long to wide
+"""
 weather_long = weather_df.melt(id_vars = ['year','month','measure'], var_name = ['day'], value_name ='value')
 weather_long['day']= weather_long['day'].str.replace('X', '')
 weather_long.isnull().sum()
 weather_long.isnull().any()
-
 weather_long.head()
+
 weather_long_wide = weather_long.pivot_table(index=["year", "month", "day"], columns="measure", values = "value", aggfunc='first').reset_index()
+weather_long_wide.head()
+weather_long_wide.columns.name = None
+
+
+"""
+4. 데이터에 year month day 세 column이 있는데 이를 하나로 합쳐서 date column을 추가하시오. 
+date column은 Date data type이어야합니다. 그리고 year month day 세 column은 제거하시오
+"""
+weather_long_wide['date'] = weather_long_wide['year'].astype('str') + '-' + weather_long_wide['month'].astype('str') + '-' + weather_long_wide['day'].astype('str')
+weather_long_wide['date'] = pd.to_datetime(weather_long_wide['date'])
+weather_long_wide = weather_long_wide.drop(['year', 'month', 'day'], axis = 1)
+
+"""
+5. PrecipitationIn(강수량) 변수를 보면 “T”라는 값이 있는데 이는 Trace 비가 아주 미량왔다는 의미이다. 
+해당 변수를 숫자형으로 변환할 수 있도록, “T”를 숫자 0으로 변환하시오.
+"""
+
+weather_long_wide['PrecipitationIn'][weather_long_wide['PrecipitationIn'] == "T"] = 0
+
+"""
+7. 데이터셋에 missing values가 있나요? 몇 개나 있나요? 각 변수 별로 몇 개씩 있나요?
+"""
+weather_long_wide.isnull().sum()
 weather_long_wide_nona = weather_long_wide.loc[~weather_long.isnull().any(axis=1)]
-weather_long_wide_nona.loc[~weather_long['value'].isnull()]
 
+
+"""
+8. 각 변수의 data type을 적절한 것으로 변환하시오.
+"""
 weather_long_wide_nona.info()
-
-weather_long_wide_nona['day'] = weather_long_wide_nona['day']
-
-weather_long_wide_nona.head()
 weather_long_wide_nona.describe(include = 'all')
-
-weather_long_wide_nona['date'] = weather_long_wide_nona['year'].astype('str') +'-' + weather_long_wide_nona['month'].astype('str') + '-' +weather_long_wide_nona['day'].astype('str')
-weather_long_wide_nona['date'] = pd.to_datetime(weather_long_wide_nona['date'])
-
-weather_long_wide_nona.info()
-weather_long_wide_nona = weather_long_wide_nona.drop(['year', 'month','day'], axis = 1)
-
-weather_long_wide_nona = weather_long_wide_nona.rename_axis(None, axis=1)
-weather_long_wide_nona.head()
-
-weather_long_wide_nona = weather_long_wide_nona[~weather_long_wide_nona.isnull().any(axis = 1)]
-
-weather_long_wide_nona['PrecipitationIn'][weather_long_wide_nona['PrecipitationIn'] == 'T'] = 0
-
-weather_long_wide_nona.describe(include='all')
-weather_long_wide_nona.head()
 weather_long_wide_nona['CloudCover'] = weather_long_wide_nona['CloudCover'].astype('category')
 weather_long_wide_nona['Events'] = weather_long_wide_nona['Events'].astype('object')
 weather_long_wide_nona.iloc[:,2:-1] = weather_long_wide_nona.iloc[:,2:-1].astype('float')
 weather_long_wide_nona.info()
 
-weather_long_wide_nona['Max.Humidity'].describe()
 
+"""
+9. Max.Humidity(최대 습도) 변수를 보시오. outlier가 있나요? 
+outlier 값이 실수로 0이 하나 더 붙어 나온 값이라고 합시다. 해당 outlier를 적절한 값으로 고치시오
+"""
+weather_long_wide_nona['Max.Humidity'].describe()
 weather_long_wide_nona['Max.Humidity'][weather_long_wide_nona['Max.Humidity'] == 1000] = 100
 
-weather_long_wide_nona[weather_long_wide_nona['Events'] == ""]
+"""
+10. Mean.VisibilityMiles(평균시야거리) 변수를 보시오. outlier가 있나요? outlier를 적절한 값으로 고치시오.
+"""
+weather_long_wide_nona['Mean.VisibilityMiles'].describe()
+weather_long_wide_nona['Mean.VisibilityMiles'][weather_long_wide_nona['Mean.VisibilityMiles'] == 0]
+
+"""
+11. 칼럼명을 모두 소문자로 바꾸세요
+"""
 weather_long_wide_nona.columns = weather_long_wide_nona.columns.str.lower()
+
 
 
 
 """ 2017-2 중간고사 """
 
 """
-1. 파일에 저장된 데이터를 data.frame으로 R에 읽어오세요. 어떤 방법으로
+1. 파일에 저장된 데이터를 dataframe으로 읽어오세요. 어떤 방법으로
 읽었으며 왜 그렇게 하였는지 설명하세요.
+
 """
 insurance = pd.read_csv(r"C:\Users\dof07\PycharmProjects\bigdatalicense\practice_data\내자료\2017-2중간고사\insurance.csv")
 
@@ -194,3 +304,58 @@ temp['count']
 
 insurance.groupby(['smoker'])['expenses'].describe()
 
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+insurance.head()
+insurance.info()
+
+#insurance.loc[:,['sex','smoker', 'region', 'age_bin']] = insurance.loc[:,['sex','smoker','region','age_bin']].apply(LabelEncoder().fit_transform)
+
+insurance.head()
+
+children_dum = pd.get_dummies(insurance['children'], prefix = 'children')
+region_dum = pd.get_dummies(insurance['region'], prefix = 'region')
+pd.get_dummies(insurance['age_bin'], prefix = 'age_bin')
+male_dum = pd.get_dummies(insurance['sex'], prefix = 'sex')['sex_male']
+smoker_dum = pd.get_dummies(insurance['smoker'], prefix = 'smoker')['smoker_yes']
+help(pd.concat)
+
+insurance.head()
+insurance[['age', 'bmi', 'smoker','expenses']]
+insurance_ready = pd.concat([insurance[['age', 'bmi', 'expenses']], pd.DataFrame(children_dum), pd.DataFrame(region_dum), pd.DataFrame(male_dum), pd.DataFrame(smoker_dum)], axis = 1)
+insurance_ready.columns
+X = insurance_ready[['age', 'bmi', 'children_0', 'children_1', 'children_2',
+       'children_3', 'children_4', 'children_5', 'region_northeast',
+       'region_northwest', 'region_southeast', 'region_southwest', 'sex_male',
+       'smoker_yes']]
+y = insurance_ready['expenses']
+Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size = 0.3, random_state=123)
+Xtrain.shape
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
+
+help(LinearRegression)
+lireg_train = LinearRegression().fit(Xtrain, ytrain)
+lireg_train.score(X,y)
+lireg_train.coef_
+
+lireg_train.intercept_
+y_hat_test = lireg_train.predict(Xtest)
+
+y_hat_test[:6]
+ytest.head()
+mean_squared_error(y_hat_test, ytest)
+r2_score(y_hat_test, ytest)
+
+lireg_train.summary
+model = sm.OLS(ytrain, Xtrain)
+insurance_ready.columns
+
+model = ols('expenses~' + "+".join(insurance_ready.columns), data = insurance_ready).fit()
+
+model.summary()

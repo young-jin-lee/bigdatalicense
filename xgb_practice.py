@@ -8,6 +8,7 @@ import xgboost
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import explained_variance_score
+from sklearn.preprocessing import LabelEncoder
 
 boston = load_boston()
 
