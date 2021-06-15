@@ -1,13 +1,66 @@
-
-import os
 import pandas as pd
+import numpy as np
+
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error as mse
+
+from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVC
+import xgboost
+
+
+
+
+
 
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 
-plt.rcParams['figure.figsize'] = [10, 6]
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+
+from sklearn.metrics import
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import warnings
+warnings.filterwarnings(action='ignore', category=UserWarning)
 pd.options.display.max_columns = 999
-pd.options.display.max_rows = 9919
+pd.options.display.max_rows = 999
 
 excel_dir = r"C:\Users\dof07\PycharmProjects\bigdatalicense\practice_data\내자료\midterm_practice"
 
